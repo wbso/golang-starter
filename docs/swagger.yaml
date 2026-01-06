@@ -1,0 +1,1565 @@
+basePath: /api/v1
+definitions:
+  auth.AuthResponse:
+    properties:
+      access_token:
+        type: string
+      expires_at:
+        type: string
+      refresh_token:
+        type: string
+      user:
+        $ref: '#/definitions/auth.UserInfo'
+    type: object
+  auth.ForgotPasswordRequest:
+    properties:
+      email:
+        type: string
+    type: object
+  auth.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  auth.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    type: object
+  auth.RegisterRequest:
+    properties:
+      email:
+        type: string
+      full_name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  auth.ResetPasswordRequest:
+    properties:
+      new_password:
+        type: string
+      token:
+        type: string
+    type: object
+  auth.TokenPair:
+    properties:
+      accessToken:
+        type: string
+      expiresAt:
+        type: string
+      refreshToken:
+        type: string
+    type: object
+  auth.UserInfo:
+    properties:
+      email:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  auth.VerifyEmailRequest:
+    properties:
+      token:
+        type: string
+    type: object
+  handler.PaginatedPermissionsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/permission.PermissionResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/internal_feature_permission_handler.Pagination'
+    type: object
+  handler.PaginatedRolesResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/role.RoleResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/internal_feature_role_handler.Pagination'
+    type: object
+  handler.PaginatedUsersResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/user.UserResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/internal_feature_user_handler.Pagination'
+    type: object
+  internal_feature_auth_handler.Response:
+    properties:
+      data: {}
+      status:
+        type: integer
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  internal_feature_permission_handler.Pagination:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  internal_feature_permission_handler.Response:
+    properties:
+      data: {}
+      status:
+        type: integer
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  internal_feature_role_handler.Pagination:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  internal_feature_role_handler.Response:
+    properties:
+      data: {}
+      status:
+        type: integer
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  internal_feature_user_handler.Pagination:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  internal_feature_user_handler.Response:
+    properties:
+      data: {}
+      status:
+        type: integer
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  permission.AssignPermissionRequest:
+    properties:
+      permission_id:
+        type: string
+    type: object
+  permission.CreatePermissionRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  permission.PermissionResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  permission.UpdatePermissionRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  role.AssignRoleRequest:
+    properties:
+      role_id:
+        type: string
+    type: object
+  role.CreateRoleRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  role.RoleResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  role.UpdateRoleRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  user.ChangePasswordRequest:
+    properties:
+      new_password:
+        type: string
+      old_password:
+        type: string
+    type: object
+  user.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      full_name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  user.UpdateUserRequest:
+    properties:
+      email:
+        type: string
+      full_name:
+        type: string
+      username:
+        type: string
+    type: object
+  user.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: string
+      is_disabled:
+        type: boolean
+      is_email_verified:
+        type: boolean
+      last_login_at:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+  description: A Golang starter project with Vertical Slice Architecture
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Golang Starter API
+  version: "1.0"
+paths:
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Request password reset email
+      parameters:
+      - description: Email
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.ForgotPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_feature_auth_handler.Response'
+      summary: Forgot password
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login with username/email and password
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_auth_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/auth.AuthResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_auth_handler.Response'
+      summary: Login
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout and revoke tokens
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_feature_auth_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Logout
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refresh access token using refresh token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_auth_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/auth.TokenPair'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_auth_handler.Response'
+      summary: Refresh access token
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user account
+      parameters:
+      - description: Registration details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_auth_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/auth.AuthResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_feature_auth_handler.Response'
+      summary: Register a new user
+      tags:
+      - auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Reset password with token
+      parameters:
+      - description: Token and new password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_feature_auth_handler.Response'
+      summary: Reset password
+      tags:
+      - auth
+  /auth/verify-email:
+    post:
+      consumes:
+      - application/json
+      description: Verify user email address
+      parameters:
+      - description: Verification token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.VerifyEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_feature_auth_handler.Response'
+      summary: Verify email
+      tags:
+      - auth
+  /permissions:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of permissions
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_permission_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PaginatedPermissionsResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: List permissions
+      tags:
+      - permissions
+    post:
+      consumes:
+      - application/json
+      description: Create a new permission
+      parameters:
+      - description: Permission details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/permission.CreatePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_permission_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/permission.PermissionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Create permission
+      tags:
+      - permissions
+  /permissions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a permission by ID
+      parameters:
+      - description: Permission ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete permission
+      tags:
+      - permissions
+    get:
+      consumes:
+      - application/json
+      description: Get a permission by their ID
+      parameters:
+      - description: Permission ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_permission_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/permission.PermissionResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Get permission by ID
+      tags:
+      - permissions
+    put:
+      consumes:
+      - application/json
+      description: Update a permission by ID
+      parameters:
+      - description: Permission ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Permission details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/permission.UpdatePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_permission_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/permission.PermissionResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/internal_feature_permission_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Update permission
+      tags:
+      - permissions
+  /roles:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of roles
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_role_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PaginatedRolesResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: List roles
+      tags:
+      - roles
+    post:
+      consumes:
+      - application/json
+      description: Create a new role
+      parameters:
+      - description: Role details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/role.CreateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_role_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/role.RoleResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Create role
+      tags:
+      - roles
+  /roles/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a role by ID
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete role
+      tags:
+      - roles
+    get:
+      consumes:
+      - application/json
+      description: Get a role by their ID
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_role_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/role.RoleResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Get role by ID
+      tags:
+      - roles
+    put:
+      consumes:
+      - application/json
+      description: Update a role by ID
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Role details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/role.UpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_role_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/role.RoleResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Update role
+      tags:
+      - roles
+  /roles/{id}/permissions:
+    get:
+      consumes:
+      - application/json
+      description: Get permissions for a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_role_handler.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/permission.PermissionResponse'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Get role permissions
+      tags:
+      - roles
+    post:
+      consumes:
+      - application/json
+      description: Assign a permission to a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Permission details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/permission.AssignPermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Assign permission to role
+      tags:
+      - roles
+  /roles/{id}/permissions/{permissionId}:
+    delete:
+      consumes:
+      - application/json
+      description: Revoke a permission from a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Permission ID
+        in: path
+        name: permissionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Revoke permission from role
+      tags:
+      - roles
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of users
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Sort field and direction (e.g., created_at:desc)
+        in: query
+        name: sort
+        type: string
+      - description: Filter expression (e.g., status:active)
+        in: query
+        name: filter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_user_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PaginatedUsersResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: List users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: User details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_user_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/user.UserResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Create user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete user
+      tags:
+      - users
+    get:
+      consumes:
+      - application/json
+      description: Get a user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_user_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/user.UserResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_user_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/user.UserResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Update user
+      tags:
+      - users
+  /users/{id}/disable:
+    post:
+      consumes:
+      - application/json
+      description: Disable a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Disable user
+      tags:
+      - users
+  /users/{id}/enable:
+    post:
+      consumes:
+      - application/json
+      description: Enable (restore) a disabled user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Enable user
+      tags:
+      - users
+  /users/{id}/roles:
+    get:
+      consumes:
+      - application/json
+      description: Get roles for a user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_role_handler.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/role.RoleResponse'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Get user roles
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Assign a role to a user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Role details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/role.AssignRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Assign role to user
+      tags:
+      - users
+  /users/{id}/roles/{roleId}:
+    delete:
+      consumes:
+      - application/json
+      description: Revoke a role from a user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Role ID
+        in: path
+        name: roleId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_feature_role_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Revoke role from user
+      tags:
+      - users
+  /users/me:
+    delete:
+      consumes:
+      - application/json
+      description: Delete the currently authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete current user
+      tags:
+      - users
+    get:
+      consumes:
+      - application/json
+      description: Get the currently authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_user_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/user.UserResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update the currently authenticated user
+      parameters:
+      - description: User details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/internal_feature_user_handler.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/user.UserResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Update current user
+      tags:
+      - users
+  /users/me/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Change the current user's password
+      parameters:
+      - description: Password details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_feature_user_handler.Response'
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
