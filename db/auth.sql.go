@@ -128,27 +128,27 @@ func (q *Queries) CreatePasswordResetToken(ctx context.Context, arg CreatePasswo
 const createRefreshToken = `-- name: CreateRefreshToken :one
 INSERT INTO refresh_tokens (
     user_id,
-    token_hash,
+    token_id,
     expires_at
 ) VALUES (
     $1, $2, $3
 )
-RETURNING id, user_id, token_hash, expires_at, created_at, revoked_at
+RETURNING id, user_id, token_id, expires_at, created_at, revoked_at
 `
 
 type CreateRefreshTokenParams struct {
 	UserID    uuid.UUID `json:"user_id"`
-	TokenHash string    `json:"token_hash"`
+	TokenID   string    `json:"token_id"`
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
 func (q *Queries) CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error) {
-	row := q.db.QueryRowContext(ctx, createRefreshToken, arg.UserID, arg.TokenHash, arg.ExpiresAt)
+	row := q.db.QueryRowContext(ctx, createRefreshToken, arg.UserID, arg.TokenID, arg.ExpiresAt)
 	var i RefreshToken
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.TokenHash,
+		&i.TokenID,
 		&i.ExpiresAt,
 		&i.CreatedAt,
 		&i.RevokedAt,
@@ -195,17 +195,17 @@ func (q *Queries) GetPasswordResetToken(ctx context.Context, token string) (Pass
 }
 
 const getRefreshToken = `-- name: GetRefreshToken :one
-SELECT id, user_id, token_hash, expires_at, created_at, revoked_at FROM refresh_tokens
-WHERE token_hash = $1 AND revoked_at IS NULL AND expires_at > CURRENT_TIMESTAMP
+SELECT id, user_id, token_id, expires_at, created_at, revoked_at FROM refresh_tokens
+WHERE token_id = $1 AND revoked_at IS NULL AND expires_at > CURRENT_TIMESTAMP
 `
 
-func (q *Queries) GetRefreshToken(ctx context.Context, tokenHash string) (RefreshToken, error) {
-	row := q.db.QueryRowContext(ctx, getRefreshToken, tokenHash)
+func (q *Queries) GetRefreshToken(ctx context.Context, tokenID string) (RefreshToken, error) {
+	row := q.db.QueryRowContext(ctx, getRefreshToken, tokenID)
 	var i RefreshToken
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.TokenHash,
+		&i.TokenID,
 		&i.ExpiresAt,
 		&i.CreatedAt,
 		&i.RevokedAt,
@@ -297,17 +297,17 @@ const revokeRefreshToken = `-- name: RevokeRefreshToken :one
 UPDATE refresh_tokens
 SET
     revoked_at = CURRENT_TIMESTAMP
-WHERE token_hash = $1 AND revoked_at IS NULL
-RETURNING id, user_id, token_hash, expires_at, created_at, revoked_at
+WHERE token_id = $1 AND revoked_at IS NULL
+RETURNING id, user_id, token_id, expires_at, created_at, revoked_at
 `
 
-func (q *Queries) RevokeRefreshToken(ctx context.Context, tokenHash string) (RefreshToken, error) {
-	row := q.db.QueryRowContext(ctx, revokeRefreshToken, tokenHash)
+func (q *Queries) RevokeRefreshToken(ctx context.Context, tokenID string) (RefreshToken, error) {
+	row := q.db.QueryRowContext(ctx, revokeRefreshToken, tokenID)
 	var i RefreshToken
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.TokenHash,
+		&i.TokenID,
 		&i.ExpiresAt,
 		&i.CreatedAt,
 		&i.RevokedAt,

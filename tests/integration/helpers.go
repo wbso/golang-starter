@@ -79,11 +79,11 @@ func GenerateTestTokens(t require.TestingT, userID uuid.UUID, email string) (str
 
 	// Store refresh token in database
 	ctx := context.Background()
-	tokenHash := tokens.RefreshToken[:32] // Simple hash for testing
+	tokenID := tokens.RefreshToken[:32] // Simple hash for testing
 	_, err = TestDB.ExecContext(ctx, `
-		INSERT INTO refresh_tokens (user_id, token_hash, expires_at)
+		INSERT INTO refresh_tokens (user_id, token_id, expires_at)
 		VALUES ($1, $2, $3)
-	`, userID, tokenHash, tokens.ExpiresAt)
+	`, userID, tokenID, tokens.ExpiresAt)
 	require.NoError(t, err)
 
 	return tokens.AccessToken, tokens.RefreshToken

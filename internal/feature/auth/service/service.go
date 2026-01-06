@@ -91,8 +91,7 @@ func (s *Service) Login(ctx context.Context, req auth.LoginRequest) (*auth.AuthR
 	}
 
 	// Store refresh token
-	tokenHash := repository.HashToken(tokens.RefreshToken)
-	if err := s.authRepo.CreateRefreshToken(ctx, user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour)); err != nil {
+	if err := s.authRepo.CreateRefreshToken(ctx, user.ID, tokens.RefreshTokenID, tokens.RefreshExpiresAt); err != nil {
 		return nil, err
 	}
 
@@ -131,6 +130,27 @@ func (s *Service) Register(ctx context.Context, req auth.RegisterRequest) (*auth
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	// find existing user by email, return error if found
+	existingUser, err := s.userRepo.GetByEmail(ctx, req.Email)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("failed to find existing user: %w", err)
+	}
+
+	if existingUser != nil {
+		return nil, apperrors.NewErrConflict().WithError(err).WithDetail("email already exists")
+	}
+
+	// find existing user by username
+	existingUser, err = s.userRepo.GetByUsername(ctx, req.Username)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("failed to find existing user: %w", err)
+	}
+
+	if existingUser != nil {
+		return nil, apperrors.NewErrConflict().WithError(err).WithDetail("username already exists")
+
 	}
 
 	// Create user
@@ -207,8 +227,7 @@ func (s *Service) RefreshToken(ctx context.Context, req auth.RefreshTokenRequest
 	}
 
 	// Check if refresh token exists in database
-	tokenHash := repository.HashToken(req.RefreshToken)
-	refreshToken, err := s.authRepo.GetRefreshToken(ctx, tokenHash)
+	refreshToken, err := s.authRepo.GetRefreshToken(ctx, claims.ID)
 	if err != nil {
 		return nil, errors.New("refresh token not found")
 	}
@@ -231,13 +250,12 @@ func (s *Service) RefreshToken(ctx context.Context, req auth.RefreshTokenRequest
 	}
 
 	// Store new refresh token
-	newTokenHash := repository.HashToken(tokens.RefreshToken)
-	if err := s.authRepo.CreateRefreshToken(ctx, user.ID, newTokenHash, tokens.ExpiresAt.Add(7*24*time.Hour)); err != nil {
+	if err := s.authRepo.CreateRefreshToken(ctx, user.ID, tokens.RefreshTokenID, tokens.RefreshExpiresAt); err != nil {
 		return nil, err
 	}
 
 	// Revoke old refresh token
-	_ = s.authRepo.RevokeRefreshToken(ctx, tokenHash)
+	_ = s.authRepo.RevokeRefreshToken(ctx, refreshToken.ID.String())
 
 	return &auth.TokenPair{
 		AccessToken:  tokens.AccessToken,

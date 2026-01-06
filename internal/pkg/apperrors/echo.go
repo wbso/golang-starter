@@ -11,6 +11,7 @@ import (
 
 // CustomHTTPErrorHandler is the default HTTP Error Handler
 func CustomHTTPErrorHandler(err error, c echo.Context) {
+	slog.Debug("==== CustomHTTPErrorHandler ====")
 	if c.Response().Committed {
 		return
 	}

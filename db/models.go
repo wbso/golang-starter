@@ -50,7 +50,7 @@ type Permission struct {
 type RefreshToken struct {
 	ID        uuid.UUID    `json:"id"`
 	UserID    uuid.UUID    `json:"user_id"`
-	TokenHash string       `json:"token_hash"`
+	TokenID   string       `json:"token_id"`
 	ExpiresAt time.Time    `json:"expires_at"`
 	CreatedAt sql.NullTime `json:"created_at"`
 	RevokedAt sql.NullTime `json:"revoked_at"`

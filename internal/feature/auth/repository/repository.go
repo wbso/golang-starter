@@ -2,8 +2,6 @@ package repository
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"time"
 
 	"github.com/google/uuid"
@@ -35,18 +33,18 @@ type EmailVerificationToken = db.EmailVerificationToken
 type PasswordResetToken = db.PasswordResetToken
 
 // CreateRefreshToken creates a new refresh token
-func (r *Repository) CreateRefreshToken(ctx context.Context, userID uuid.UUID, tokenHash string, expiresAt time.Time) error {
+func (r *Repository) CreateRefreshToken(ctx context.Context, userID uuid.UUID, tokenID string, expiresAt time.Time) error {
 	_, err := r.q.CreateRefreshToken(ctx, db.CreateRefreshTokenParams{
 		UserID:    userID,
-		TokenHash: tokenHash,
+		TokenID:   tokenID,
 		ExpiresAt: expiresAt,
 	})
 	return err
 }
 
-// GetRefreshToken gets a refresh token by hash
-func (r *Repository) GetRefreshToken(ctx context.Context, tokenHash string) (*RefreshToken, error) {
-	token, err := r.q.GetRefreshToken(ctx, tokenHash)
+// GetRefreshToken gets a refresh token by id
+func (r *Repository) GetRefreshToken(ctx context.Context, tokenID string) (*RefreshToken, error) {
+	token, err := r.q.GetRefreshToken(ctx, tokenID)
 	if err != nil {
 		return nil, err
 	}
@@ -54,8 +52,8 @@ func (r *Repository) GetRefreshToken(ctx context.Context, tokenHash string) (*Re
 }
 
 // RevokeRefreshToken revokes a refresh token
-func (r *Repository) RevokeRefreshToken(ctx context.Context, tokenHash string) error {
-	_, err := r.q.RevokeRefreshToken(ctx, tokenHash)
+func (r *Repository) RevokeRefreshToken(ctx context.Context, tokenID string) error {
+	_, err := r.q.RevokeRefreshToken(ctx, tokenID)
 	return err
 }
 
@@ -146,12 +144,6 @@ func (r *Repository) MarkPasswordResetTokenUsed(ctx context.Context, token strin
 // RevokeAllUserTokens revokes all tokens for a user
 func (r *Repository) RevokeAllUserTokens(ctx context.Context, userID uuid.UUID) error {
 	return r.q.RevokeAllUserTokens(ctx, userID)
-}
-
-// HashToken hashes a token using SHA256
-func HashToken(token string) string {
-	hash := sha256.Sum256([]byte(token))
-	return hex.EncodeToString(hash[:])
 }
 
 // GenerateToken generates a random token

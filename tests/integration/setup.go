@@ -153,7 +153,7 @@ func runMigrations(t *testing.T) error {
 	CREATE TABLE IF NOT EXISTS refresh_tokens (
 		id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 		user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-		token_hash VARCHAR(255) UNIQUE NOT NULL,
+		token_id VARCHAR(255) UNIQUE NOT NULL,
 		expires_at TIMESTAMPTZ NOT NULL,
 		revoked_at TIMESTAMPTZ,
 		created_at TIMESTAMPTZ DEFAULT NOW()
@@ -191,7 +191,7 @@ func runMigrations(t *testing.T) error {
 	CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 	CREATE INDEX IF NOT EXISTS idx_users_deleted_at ON users(deleted_at);
 	CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
-	CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token_hash ON refresh_tokens(token_hash);
+	CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token_id ON refresh_tokens(token_id);
 	CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at ON refresh_tokens(expires_at);
 	CREATE INDEX IF NOT EXISTS idx_jwt_blacklist_expires_at ON jwt_blacklist(expires_at);
 	CREATE INDEX IF NOT EXISTS idx_email_verification_tokens_user_id ON email_verification_tokens(user_id);

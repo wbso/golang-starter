@@ -152,7 +152,7 @@ func runTestMigrations(t *testing.T, db *sqlx.DB) error {
 	CREATE TABLE IF NOT EXISTS refresh_tokens (
 		id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 		user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-		token_hash VARCHAR(255) UNIQUE NOT NULL,
+		token_id VARCHAR(255) UNIQUE NOT NULL,
 		expires_at TIMESTAMPTZ NOT NULL,
 		revoked_at TIMESTAMPTZ,
 		created_at TIMESTAMPTZ DEFAULT NOW()
@@ -196,7 +196,7 @@ func runTestMigrations(t *testing.T, db *sqlx.DB) error {
 	CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 	CREATE INDEX IF NOT EXISTS idx_users_deleted_at ON users(deleted_at);
 	CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
-	CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token_hash ON refresh_tokens(token_hash);
+	CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token_id ON refresh_tokens(token_id);
 	CREATE INDEX IF NOT EXISTS idx_email_verification_tokens_user_id ON email_verification_tokens(user_id);
 	`
 
@@ -366,11 +366,11 @@ func isTokenBlacklisted(t *testing.T, db *sqlx.DB, tokenID string) bool {
 }
 
 // isRefreshTokenRevoked checks if a refresh token is revoked
-func isRefreshTokenRevoked(t *testing.T, db *sqlx.DB, tokenHash string) bool {
+func isRefreshTokenRevoked(t *testing.T, db *sqlx.DB, tokenID string) bool {
 	t.Helper()
 	ctx := context.Background()
 	var revokedAt sql.NullTime
-	err := db.QueryRowContext(ctx, "SELECT revoked_at FROM refresh_tokens WHERE token_hash = $1", tokenHash).Scan(&revokedAt)
+	err := db.QueryRowContext(ctx, "SELECT revoked_at FROM refresh_tokens WHERE token_id = $1", tokenID).Scan(&revokedAt)
 	require.NoError(t, err)
 	return revokedAt.Valid
 }
@@ -850,8 +850,7 @@ func TestService_RefreshToken(t *testing.T) {
 				user := createTestUser(t, ts.db, withEmailVerified(true))
 				tokens, err := ts.jwtMgr.GenerateTokenPair(user.ID, user.Email)
 				require.NoError(t, err)
-				tokenHash := repository.HashToken(tokens.RefreshToken)
-				err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour))
+				err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokens.RefreshTokenID, tokens.ExpiresAt.Add(7*24*time.Hour))
 				require.NoError(t, err)
 				return auth.RefreshTokenRequest{RefreshToken: tokens.RefreshToken}
 			},
@@ -892,11 +891,10 @@ func TestService_RefreshToken(t *testing.T) {
 				user := createTestUser(t, ts.db, withEmailVerified(true))
 				tokens, err := ts.jwtMgr.GenerateTokenPair(user.ID, user.Email)
 				require.NoError(t, err)
-				tokenHash := repository.HashToken(tokens.RefreshToken)
-				err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour))
+				err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokens.RefreshTokenID, tokens.ExpiresAt.Add(7*24*time.Hour))
 				require.NoError(t, err)
 				// Revoke the token
-				err = ts.authRepo.RevokeRefreshToken(context.TODO(), tokenHash)
+				err = ts.authRepo.RevokeRefreshToken(context.TODO(), tokens.RefreshTokenID)
 				require.NoError(t, err)
 				return auth.RefreshTokenRequest{RefreshToken: tokens.RefreshToken}
 			},
@@ -910,8 +908,7 @@ func TestService_RefreshToken(t *testing.T) {
 				user := createTestUser(t, ts.db, withEmailVerified(true))
 				tokens, err := ts.jwtMgr.GenerateTokenPair(user.ID, user.Email)
 				require.NoError(t, err)
-				tokenHash := repository.HashToken(tokens.RefreshToken)
-				err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour))
+				err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokens.RefreshTokenID, tokens.ExpiresAt.Add(7*24*time.Hour))
 				require.NoError(t, err)
 				// Soft delete the user
 				_, err = ts.db.Exec("UPDATE users SET deleted_at = NOW() WHERE id = $1", user.ID)
@@ -927,8 +924,7 @@ func TestService_RefreshToken(t *testing.T) {
 				user := createTestUser(t, ts.db, withEmailVerified(true), withDisabled(true))
 				tokens, err := ts.jwtMgr.GenerateTokenPair(user.ID, user.Email)
 				require.NoError(t, err)
-				tokenHash := repository.HashToken(tokens.RefreshToken)
-				err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour))
+				err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokens.RefreshTokenID, tokens.ExpiresAt.Add(7*24*time.Hour))
 				require.NoError(t, err)
 				return auth.RefreshTokenRequest{RefreshToken: tokens.RefreshToken}
 			},
@@ -947,9 +943,6 @@ func TestService_RefreshToken(t *testing.T) {
 
 			req := tt.setup(t, ts)
 
-			// Get old token hash for assertion
-			oldTokenHash := repository.HashToken(req.RefreshToken)
-
 			// When
 			resp, err := ts.service.RefreshToken(context.TODO(), req)
 
@@ -963,9 +956,6 @@ func TestService_RefreshToken(t *testing.T) {
 				assert.NotNil(t, resp)
 				if tt.assertToken != nil {
 					tt.assertToken(t, resp)
-				}
-				if tt.assertDB != nil {
-					tt.assertDB(t, ts.db, oldTokenHash)
 				}
 			}
 		})
@@ -989,8 +979,7 @@ func TestService_Logout(t *testing.T) {
 				user := createTestUser(t, ts.db, withEmailVerified(true))
 				tokens, err := ts.jwtMgr.GenerateTokenPair(user.ID, user.Email)
 				require.NoError(t, err)
-				tokenHash := repository.HashToken(tokens.RefreshToken)
-				err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour))
+				err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokens.RefreshTokenID, tokens.ExpiresAt.Add(7*24*time.Hour))
 				require.NoError(t, err)
 				return user.ID, tokens.AccessToken
 			},
@@ -1020,8 +1009,7 @@ func TestService_Logout(t *testing.T) {
 
 				// Create multiple refresh tokens
 				for i := 0; i < 3; i++ {
-					tokenHash := repository.HashToken(tokens.RefreshToken + fmt.Sprint(i))
-					err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokenHash, time.Now().Add(7*24*time.Hour))
+					err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokens.RefreshTokenID, time.Now().Add(7*24*time.Hour))
 					require.NoError(t, err)
 				}
 				return user.ID, tokens.AccessToken

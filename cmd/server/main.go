@@ -112,6 +112,17 @@ func main() {
 	// Initialize repositories
 	userRepo := userrepo.New(db.DB)
 	authRepo := authrepository.New(db.DB)
+
+	go func() {
+		ticker := time.NewTicker(1 * time.Hour)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			slog.Info("Cleaning up expired tokens")
+			_ = authRepo.CleanupExpiredTokens(context.Background())
+		}
+	}()
+
 	roleRepo := rolerepo.New(db.DB)
 	permissionRepo := permissionrepo.New(db.DB)
 

@@ -18,9 +18,11 @@ type Claims struct {
 
 // TokenPair contains access and refresh tokens
 type TokenPair struct {
-	AccessToken  string    `json:"access_token"`
-	RefreshToken string    `json:"refresh_token"`
-	ExpiresAt    time.Time `json:"expires_at"`
+	AccessToken      string    `json:"access_token"`
+	RefreshToken     string    `json:"refresh_token"`
+	RefreshTokenID   string    `json:"refresh_token_id"`
+	ExpiresAt        time.Time `json:"expires_at"`
+	RefreshExpiresAt time.Time `json:"refresh_expires_at"`
 }
 
 // Manager handles JWT operations
@@ -42,7 +44,8 @@ func New(secret string, accessExpiry, refreshExpiry time.Duration) *Manager {
 // GenerateTokenPair generates both access and refresh tokens
 func (m *Manager) GenerateTokenPair(userID uuid.UUID, email string) (*TokenPair, error) {
 	now := time.Now()
-	expiresAt := now.Add(m.accessExpiry)
+	accessExpiresAt := now.Add(m.accessExpiry)
+	refreshExpiresAt := now.Add(m.refreshExpiry)
 
 	claims := &Claims{
 		UserID: userID,
@@ -50,12 +53,12 @@ func (m *Manager) GenerateTokenPair(userID uuid.UUID, email string) (*TokenPair,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        uuid.New().String(),
 			IssuedAt:  jwt.NewNumericDate(now),
-			ExpiresAt: jwt.NewNumericDate(expiresAt),
+			ExpiresAt: jwt.NewNumericDate(accessExpiresAt),
 		},
 	}
 
 	// Generate access token
-	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(m.secret)
+	accessTokenString, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(m.secret)
 	if err != nil {
 		return nil, err
 	}
@@ -66,18 +69,20 @@ func (m *Manager) GenerateTokenPair(userID uuid.UUID, email string) (*TokenPair,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        uuid.New().String(),
 			IssuedAt:  jwt.NewNumericDate(now),
-			ExpiresAt: jwt.NewNumericDate(now.Add(m.refreshExpiry)),
+			ExpiresAt: jwt.NewNumericDate(refreshExpiresAt),
 		},
 	}
-	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString(m.secret)
+	refreshTokenString, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString(m.secret)
 	if err != nil {
 		return nil, err
 	}
 
 	return &TokenPair{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		ExpiresAt:    expiresAt,
+		AccessToken:      accessTokenString,
+		RefreshToken:     refreshTokenString,
+		RefreshTokenID:   refreshClaims.ID,
+		ExpiresAt:        accessExpiresAt,
+		RefreshExpiresAt: refreshExpiresAt,
 	}, nil
 }
 
