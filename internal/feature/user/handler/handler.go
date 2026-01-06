@@ -40,7 +40,6 @@ func New(userSvc *service.Service) *Handler {
 // @Failure 403 {object} Response
 // @Router /users [get]
 func (h *Handler) List(c echo.Context) error {
-
 	var req user.ListUsersRequest
 	bindErr := c.Bind(&req)
 	if bindErr != nil {

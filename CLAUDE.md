@@ -130,6 +130,110 @@ tests/
 
 **Database**: Uses `sqlx` (not pgx) with PostgreSQL. Connection pooling, health checks, transaction support.
 
+## Go Code Style Guide
+
+Follow these idiomatic Go conventions throughout the codebase:
+
+### Naming Conventions
+
+- **Packages**: Use short, lowercase, single-word names (e.g., `user`, `auth`, `jwt`). Avoid underscores or mixedCaps.
+- **Interfaces**: Name with `-er` suffix for single-method interfaces (e.g., `Reader`, `Writer`, `PermissionChecker`).
+- **Variables**: Use camelCase for local variables, PascalCase for exported identifiers.
+- **Acronyms**: Keep consistent case (e.g., `userID`, `HTTPServer`, `URLPath`).
+- **Receivers**: Use short, consistent names (1-2 chars), typically first letter of type (e.g., `u *User`, `s *Service`).
+
+### Error Handling
+
+- **Always check return values**: Never ignore errors. Use `_` explicitly if intentionally discarding.
+- **Avoid inline error handling**: Don't handle errors inline in complex expressions.
+
+  ```go
+  // ✅ Good - clear separation
+  user, err := s.repo.GetByID(ctx, id)
+  if err != nil {
+      return nil, err
+  }
+  return user, nil
+  ```
+
+- **Wrap errors with context**: Use `fmt.Errorf` with `%w` to wrap errors with additional context.
+- **Return early**: Use guard clauses to reduce nesting.
+
+### Logging
+
+- **Prefer `slog` for structured logging** over `fmt.Println`:
+
+  ```go
+  // ✅ Good - structured logging
+  slog.Info("User created", slog.String("user_id", userID), slog.String("email", email))
+  ```
+
+- Use appropriate log levels: `Debug`, `Info`, `Warn`, `Error`.
+
+### Pointers
+
+- **Avoid returning pointers except for shared resources**:
+
+  - Return pointers for large structs to avoid copying.
+  - Return pointers when the function needs to modify the receiver.
+  - Return pointers for shared resources (e.g., database connections, caches).
+  - Return values for small structs and primitives.
+
+- **Receiver types**: Use pointer receivers for methods that modify the receiver or for large structs. Use value receivers for small, immutable types.
+
+### Variables
+
+- **Avoid shadowing variables**: Don't redeclare variables in inner scopes.
+- **Use short variable names** in limited scopes, descriptive names in wider scopes.
+- **Declare variables close to usage**: Minimize the distance between declaration and use.
+
+### Types
+
+- **Always use `any` instead of `interface{}`**: Modern Go prefers the `any` type alias.
+- **Prefer composition over inheritance**: Use embedded structs and interfaces.
+- **Make zero values useful**: Design structs so their zero value is valid and usable.
+
+### Functions
+
+- **Keep functions small and focused**: Each function should do one thing well.
+- **Limit function parameters**: Use structs for functions with many parameters.
+- **Return errors as the last return value**: Follow the convention `(result, error)`.
+- **Accept interfaces, return structs**: Makes code more testable and flexible.
+
+### Concurrency
+
+- **Use contexts for cancellation**: Pass `context.Context` as the first parameter.
+- **Don't leak goroutines**: Ensure all goroutines have a way to exit.
+- **Use channels for communication**: Prefer channels over shared memory with locks.
+- **Protect shared state**: Use `sync.Mutex` or `sync.RWMutex` for shared data.
+
+### Testing
+
+- **Table-driven tests**: Use subtests with `t.Run()` for multiple test cases.
+- **Test file naming**: Use `_test.go` suffix (e.g., `user_test.go`).
+- **Test function naming**: Use `TestFunctionName` format.
+- **Use testify/assert**: For readable assertions (already in use).
+- **Mock interfaces**: Use interfaces for dependencies to enable mocking.
+
+### Code Organization
+
+- **Group related declarations**: Group imports, constants, variables, and types logically.
+- **Order of declarations**: Constants → Variables → Types → Functions.
+
+### Comments
+
+- **Document exported identifiers**: All exported functions, types, and constants should have doc comments.
+- **Start with the identifier name**: `// GetUser retrieves a user by ID` (not `// This function gets a user`).
+- **Explain why, not what**: Code should be self-explanatory; comments explain rationale.
+- **TODO comments**: Use `// TODO: description` for future improvements.
+
+### Performance
+
+- **Preallocate slices**: Use `make([]T, 0, capacity)` when size is known.
+- **Use string builders**: Use `strings.Builder` for string concatenation in loops.
+- **Avoid unnecessary allocations**: Reuse buffers and objects where appropriate.
+- **Profile before optimizing**: Use `pprof` to identify actual bottlenecks.
+
 ## Environment Setup
 
 Copy `.env.example` to `.env` and configure:

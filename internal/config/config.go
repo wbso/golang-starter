@@ -41,6 +41,16 @@ type JWTConfig struct {
 	Secret        string
 	AccessExpiry  time.Duration
 	RefreshExpiry time.Duration
+	RS256         JWTRs256Config
+}
+
+// JWTRs256Config holds RS256 JWT verification configuration for external Auth Server
+type JWTRs256Config struct {
+	Enabled            bool
+	JWKSURL            string
+	Issuer             string
+	Audience           string
+	KeyRefreshInterval time.Duration
 }
 
 // EmailConfig holds email configuration
@@ -75,11 +85,11 @@ func Load() (*Config, error) {
 			Env:  getEnv("APP_ENV", "development"),
 		},
 		Database: DatabaseConfig{
-			Host:                  getEnv("DB_HOST", "localhost"),
-			Port:                  getEnv("DB_PORT", "5432"),
-			User:                  getEnv("DB_USER", "postgres"),
+			Host:                  getEnv("DB_HOST", ""),
+			Port:                  getEnv("DB_PORT", ""),
+			User:                  getEnv("DB_USER", ""),
 			Password:              getEnv("DB_PASSWORD", ""),
-			Name:                  getEnv("DB_NAME", "golang_starter"),
+			Name:                  getEnv("DB_NAME", ""),
 			MaxConnections:        getEnvAsInt("DB_MAX_CONNECTIONS", 25),
 			MaxIdleConnections:    getEnvAsInt("DB_MAX_IDLE_CONNECTIONS", 5),
 			ConnectionMaxLifetime: getEnvAsDuration("DB_CONNECTION_MAX_LIFETIME", 5) * time.Minute,
@@ -88,10 +98,17 @@ func Load() (*Config, error) {
 			Secret:        getEnv("JWT_SECRET", ""),
 			AccessExpiry:  getEnvAsDuration("JWT_ACCESS_EXPIRY", 15) * time.Minute,
 			RefreshExpiry: getEnvAsDuration("JWT_REFRESH_EXPIRY", 168) * time.Hour,
+			RS256: JWTRs256Config{
+				Enabled:            getEnvAsBool("JWT_RS256_ENABLED", false),
+				JWKSURL:            getEnv("JWT_RS256_JWKS_URL", ""),
+				Issuer:             getEnv("JWT_RS256_ISSUER", ""),
+				Audience:           getEnv("JWT_RS256_AUDIENCE", ""),
+				KeyRefreshInterval: getEnvAsDuration("JWT_RS256_KEY_REFRESH", 60) * time.Minute,
+			},
 		},
 		Email: EmailConfig{
-			Host:     getEnv("SMTP_HOST", "localhost"),
-			Port:     getEnv("SMTP_PORT", "1025"),
+			Host:     getEnv("SMTP_HOST", ""),
+			Port:     getEnv("SMTP_PORT", ""),
 			User:     getEnv("SMTP_USER", ""),
 			Password: getEnv("SMTP_PASSWORD", ""),
 			From:     getEnv("SMTP_FROM", "noreply@example.com"),
@@ -145,6 +162,16 @@ func getEnvAsDuration(key string, defaultValue int) time.Duration {
 		}
 	}
 	return time.Duration(defaultValue)
+}
+
+// getEnvAsBool gets an environment variable as a boolean or returns a default value
+func getEnvAsBool(key string, defaultValue bool) bool {
+	if value := os.Getenv(key); value != "" {
+		if boolVal, err := strconv.ParseBool(value); err == nil {
+			return boolVal
+		}
+	}
+	return defaultValue
 }
 
 // Address returns the server address

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -42,7 +41,7 @@ func (h *Handler) Register(c echo.Context) error {
 
 	resp, err := h.authSvc.Register(c.Request().Context(), req)
 	if err != nil {
-		return fmt.Errorf("failed to register user: %w", err)
+		return err
 	}
 
 	return c.JSON(http.StatusCreated, Response{

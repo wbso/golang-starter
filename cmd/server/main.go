@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+	"github.com/lmittmann/tint"
 
 	"github.com/joho/godotenv"
 
@@ -37,7 +39,6 @@ import (
 	"github.com/wbso/golang-starter/internal/pkg/apperrors"
 	"github.com/wbso/golang-starter/internal/pkg/email"
 	"github.com/wbso/golang-starter/internal/pkg/jwt"
-	"github.com/wbso/golang-starter/internal/pkg/logger"
 	"github.com/wbso/golang-starter/internal/pkg/seed"
 )
 
@@ -73,7 +74,7 @@ func main() {
 	}
 
 	// Initialize logger
-	logger.Init(cfg.Server.Env)
+	initLogger(cfg.Server.Env == "production")
 
 	// Connect to database
 	db, err := database.New(
@@ -91,16 +92,16 @@ func main() {
 		}
 	}()
 
-	logger.Info("Database connected successfully")
+	slog.Info("Database connected successfully")
 
 	// Run database seeding
-	logger.Info("Running database seeding...")
+	slog.Info("Running database seeding...")
 	seeder := seed.New(db.DB, &seed.Config{
 		GeneratePassword:    true,
 		RequireVerification: false,
 	})
 	if err := seeder.SeedAll(context.Background()); err != nil {
-		logger.Warn("Failed to run database seeding", "error", err)
+		slog.Warn("Failed to run database seeding", "error", err)
 		// Don't fail on seeding errors, just log and continue
 	}
 
@@ -134,12 +135,10 @@ func main() {
 	e := echo.New()
 
 	// Middleware
-	// e.Use(appmiddleware.RequestID())
-	// e.Use(appmiddleware.Logger())
-	// e.Use(appmiddleware.PanicRecovery())
+	e.Use(appmiddleware.RequestID())
+	e.Use(appmiddleware.Logger())
 	e.Use(middleware.Recover())
-	// e.Use(middleware.CORS())
-	// e.Use(middleware.Gzip())
+
 	e.HTTPErrorHandler = apperrors.CustomHTTPErrorHandler
 
 	// Rate limiting
@@ -238,14 +237,13 @@ func main() {
 
 	// Swagger documentation (protected)
 	swaggerGroup := v1.Group("/swagger")
-	swaggerGroup.Use(appmiddleware.JWTAuth(jwtMgr))
-	{
-		swaggerGroup.GET("*", echoSwagger.WrapHandler)
-	}
+	// swaggerGroup.Use(appmiddleware.JWTAuth(jwtMgr))
+
+	swaggerGroup.GET("*", echoSwagger.WrapHandler)
 
 	// Start server
 	go func() {
-		logger.Info("Starting server", "address", cfg.Server.Address())
+		slog.Info("Starting server", "address", cfg.Server.Address())
 		if err := e.Start(cfg.Server.Address()); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("Failed to start server: %v", err)
 		}
@@ -256,7 +254,7 @@ func main() {
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	<-quit
 
-	logger.Info("Shutting down server...")
+	slog.Info("Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -265,5 +263,26 @@ func main() {
 		log.Fatalf("Server forced to shutdown: %v", err)
 	}
 
-	logger.Info("Server exited")
+	slog.Info("Server exited")
+}
+
+func initLogger(isProduction bool) {
+	var handler slog.Handler
+
+	opts := &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}
+
+	switch isProduction {
+	case true:
+		handler = slog.NewJSONHandler(os.Stderr, opts)
+	default:
+		handler = tint.NewHandler(os.Stderr, &tint.Options{
+			Level:      slog.LevelDebug,
+			TimeFormat: time.Kitchen,
+			AddSource:  true,
+		})
+	}
+
+	slog.SetDefault(slog.New(handler))
 }

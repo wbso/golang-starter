@@ -41,7 +41,7 @@ func setupTest(t *testing.T) *testSetup {
 	t.Setenv("DB_PORT", "10012")
 	t.Setenv("DB_USER", "postgres")
 	t.Setenv("DB_PASSWORD", "Secretcom123")
-	t.Setenv("DB_NAME", "golang_starter")
+	t.Setenv("DB_NAME", "golang_starter_test")
 	t.Setenv("JWT_SECRET", "test-secret-key-that-is-at-least-32-chars-long")
 	t.Setenv("SMTP_HOST", "localhost")
 	t.Setenv("SMTP_PORT", "1025")

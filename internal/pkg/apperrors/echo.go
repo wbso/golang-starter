@@ -3,6 +3,7 @@ package apperrors
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -16,6 +17,7 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 
 	var appErr *AppError
 	if errors.As(err, &appErr) {
+		slog.Error("AppError", "error", err)
 		_ = c.JSON(appErr.Code, appErr)
 		return
 	}

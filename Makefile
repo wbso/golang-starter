@@ -17,6 +17,7 @@ gofumpt_cmd = mvdan.cc/gofumpt@v0.9.2
 govulncheck_cmd = golang.org/x/vuln/cmd/govulncheck@v1.1.4
 sqlc_cmd = github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
 air_cmd = github.com/air-verse/air@v1.63.4
+swag_cmd = github.com/swaggo/swag/cmd/swag@v1.16.6
 
 ## dev: run the application with reloading on file changes
 .PHONY: dev
@@ -59,7 +60,7 @@ test-integration: ## Run integration tests only
 
 swagger-generate: ## Generate Swagger documentation
 	@echo "Generating Swagger documentation..."
-	@~/go/bin/swag init -g cmd/server/main.go -o docs
+	@go run ${swag_cmd} init -g cmd/server/main.go -o docs
 
 clean: ## Clean build artifacts
 	@echo "Cleaning..."

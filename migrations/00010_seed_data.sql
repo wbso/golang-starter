@@ -79,20 +79,4 @@ ON CONFLICT (role_id, permission_id) DO NOTHING;
 -- Note: Admin user will be created programmatically on first startup
 -- with a randomly generated password that will be logged to console
 
--- +goose Down
--- Remove role assignments first
-DELETE FROM role_permissions WHERE role_id IN (
-    SELECT id FROM roles WHERE name IN ('admin', 'user_manager', 'user')
-);
 
--- Delete roles
-DELETE FROM roles WHERE name IN ('admin', 'user_manager', 'user');
-
--- Delete permissions
-DELETE FROM permissions WHERE name IN (
-    'create_user', 'update_user', 'delete_user', 'view_user', 'disable_user', 'restore_user', 'list_users',
-    'create_role', 'update_role', 'delete_role', 'view_role', 'list_roles', 'assign_role', 'revoke_role',
-    'create_permission', 'update_permission', 'delete_permission', 'view_permission', 'list_permissions',
-    'login', 'logout', 'register', 'refresh_token', 'reset_password', 'verify_email', 'change_password',
-    'view_own_profile', 'update_own_profile', 'delete_own_account'
-);

@@ -3,15 +3,17 @@ package middleware
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/wbso/golang-starter/internal/pkg/apperrors"
-	"github.com/wbso/golang-starter/internal/pkg/logger"
 	"golang.org/x/time/rate"
 )
+
+type loggerKey struct{}
 
 const (
 	// RequestIDHeader is the header name for request ID
@@ -37,8 +39,9 @@ func RequestID() echo.MiddlewareFunc {
 			c.Set(RequestIDKey, rid)
 
 			// Add to logger context
-			ctx := logger.ToContext(c.Request().Context(), logger.With("request_id", rid))
-			c.SetRequest(c.Request().WithContext(ctx))
+			// ctx := slog.ToContext(c.Request().Context(), slog.With("request_id", rid))
+			// ctx := context.WithValue(c.Request().Context(), loggerKey{}, rid)
+			// c.SetRequest(c.Request().WithContext(ctx))
 
 			return next(c)
 		}
@@ -78,11 +81,11 @@ func Logger() echo.MiddlewareFunc {
 			}
 
 			// Log request
-			logFunc := logger.Info
+			logFunc := slog.Info
 			if status >= 400 && status < 500 {
-				logFunc = logger.Warn
+				logFunc = slog.Warn
 			} else if status >= 500 {
-				logFunc = logger.Error
+				logFunc = slog.Error
 			}
 
 			logFunc("request completed",
@@ -108,7 +111,7 @@ func PanicRecovery() echo.MiddlewareFunc {
 			defer func() {
 				if r := recover(); r != nil {
 					rid, _ := c.Get(RequestIDKey).(string)
-					logger.Error("panic recovered",
+					slog.Error("panic recovered",
 						"request_id", rid,
 						"panic", r,
 						"path", c.Request().URL.Path,
