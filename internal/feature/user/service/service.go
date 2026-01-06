@@ -92,16 +92,7 @@ func (s *Service) Create(ctx context.Context, req user.CreateUserRequest, create
 
 	dbUser, err := s.userRepo.Create(ctx, params)
 	if err != nil {
-		// Check for unique constraint violations
-		if isUniqueViolation(err) {
-			if containsConstraint(err.Error(), "users_username_key") {
-				return nil, errors.New("username already exists")
-			}
-			if containsConstraint(err.Error(), "users_email_key") {
-				return nil, errors.New("email already exists")
-			}
-		}
-		return nil, err
+		return nil, handleUniqueViolationError(err)
 	}
 
 	u := convertDBUserToDomain(dbUser)
@@ -150,16 +141,7 @@ func (s *Service) Update(ctx context.Context, id uuid.UUID, req user.UpdateUserR
 		UpdatedBy: ub,
 	})
 	if err != nil {
-		// Check for unique constraint violations
-		if isUniqueViolation(err) {
-			if containsConstraint(err.Error(), "users_username_key") {
-				return nil, errors.New("username already exists")
-			}
-			if containsConstraint(err.Error(), "users_email_key") {
-				return nil, errors.New("email already exists")
-			}
-		}
-		return nil, err
+		return nil, handleUniqueViolationError(err)
 	}
 
 	u := convertDBUserToDomain(dbUser)
@@ -303,4 +285,17 @@ func isUniqueViolation(err error) bool {
 
 func containsConstraint(err string, constraint string) bool {
 	return strings.Contains(err, constraint)
+}
+
+func handleUniqueViolationError(err error) error {
+	if !isUniqueViolation(err) {
+		return err
+	}
+	if containsConstraint(err.Error(), "users_username_key") {
+		return errors.New("username already exists")
+	}
+	if containsConstraint(err.Error(), "users_email_key") {
+		return errors.New("email already exists")
+	}
+	return err
 }

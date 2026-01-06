@@ -3,7 +3,6 @@ package integration
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -26,15 +25,15 @@ var (
 func SetupTest(t *testing.T) {
 
 	// Set test environment variables
-	_ = os.Setenv("DB_HOST", "localhost")
-	_ = os.Setenv("DB_PORT", "10012")
-	_ = os.Setenv("DB_USER", "postgres")
-	_ = os.Setenv("DB_PASSWORD", "Secretcom123")
-	_ = os.Setenv("DB_NAME", "golang_starter")
-	_ = os.Setenv("JWT_SECRET", "test-secret-key-that-is-at-least-32-chars-long")
-	_ = os.Setenv("SMTP_HOST", "localhost")
-	_ = os.Setenv("SMTP_PORT", "1025")
-	_ = os.Setenv("APP_ENV", "test")
+	t.Setenv("DB_HOST", "localhost")
+	t.Setenv("DB_PORT", "10012")
+	t.Setenv("DB_USER", "postgres")
+	t.Setenv("DB_PASSWORD", "Secretcom123")
+	t.Setenv("DB_NAME", "golang_starter")
+	t.Setenv("JWT_SECRET", "test-secret-key-that-is-at-least-32-chars-long")
+	t.Setenv("SMTP_HOST", "localhost")
+	t.Setenv("SMTP_PORT", "1025")
+	t.Setenv("APP_ENV", "test")
 
 	// Load config
 	cfg, err := config.Load()

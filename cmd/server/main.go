@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -245,7 +246,7 @@ func main() {
 	// Start server
 	go func() {
 		logger.Info("Starting server", "address", cfg.Server.Address())
-		if err := e.Start(cfg.Server.Address()); err != nil && err != http.ErrServerClosed {
+		if err := e.Start(cfg.Server.Address()); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("Failed to start server: %v", err)
 		}
 	}()

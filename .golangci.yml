@@ -1,0 +1,76 @@
+version: "2"
+linters:
+  default: all
+  disable:
+    # important
+    - cyclop
+    - unused
+    - dupl
+    - err113
+    - exhaustruct
+    - godox
+    - goconst
+    - govet
+    - gocritic
+    - ireturn
+    - modernize
+    - musttag
+    - noinlineerr
+    - paralleltest
+    - testifylint
+    - thelper
+    - wrapcheck
+    - forcetypeassert
+    - unused
+    - whitespace
+    - durationcheck
+    - unparam
+    # ========
+    # style
+    # ========
+    - funcorder
+    - intrange
+    - nlreturn
+    - perfsprint
+    - wsl_v5
+    # ========
+    # others
+    # ========
+    - contextcheck
+    - depguard
+    - dupword
+    - funlen
+    - gochecknoglobals
+    - godot
+    - lll
+    - mnd
+    - nolintlint
+    - revive
+    - tagalign
+    - tagliatelle
+    - testpackage
+    - varnamelen
+    - wsl
+  settings:
+    ireturn:
+      allow:
+        - anon
+        - error
+        - empty
+        - stdlib
+        - github.com/wbso/startergo/openapi
+    govet:
+      enable-all: true
+    modernize:
+      disable:
+        - mapsloop
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - gocyclo
+          - errcheck
+          - dupl
+          - gosec
+          - noctx
+          - errchkjson

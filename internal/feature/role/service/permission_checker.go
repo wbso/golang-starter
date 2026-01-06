@@ -37,7 +37,9 @@ func (pc *PermissionChecker) GetUserPermissions(ctx context.Context, userID uuid
 	// Also get user roles and add them as permissions
 	dbRoles, err := pc.roleRepo.GetUserRoles(ctx, userID)
 	if err != nil {
-		return permissions, nil // Return what we have
+		// Return partial result rather than failing - log error in production
+		//nolint:nilerr // intentional - we return partial data on error
+		return permissions, nil
 	}
 
 	for _, role := range dbRoles {

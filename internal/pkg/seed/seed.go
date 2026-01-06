@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"log"
 	"math/big"
 
 	"github.com/google/uuid"
@@ -222,7 +223,7 @@ func (s *Seeder) SeedAll(ctx context.Context) error {
 
 // printAdminCredentials prints the admin user credentials
 func (s *Seeder) printAdminCredentials(username, email, password string) {
-	fmt.Printf(`
+	log.Printf(`
 ========================================
 INITIAL ADMIN USER CREATED
 ========================================

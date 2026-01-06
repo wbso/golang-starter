@@ -38,10 +38,14 @@ func (s *Service) List(ctx context.Context, page, limit int) ([]permission.Permi
 		limit = 100
 	}
 
-	offset := int32((page - 1) * limit)
+	offset := (page - 1) * limit
+	if offset < 0 || offset > int(^uint32(0)>>1) {
+		return nil, 0, errors.New("invalid offset calculation")
+	}
 
 	// Get permissions
-	dbPermissions, err := s.permissionRepo.List(ctx, int32(limit), offset)
+	//nolint:gosec // G115 - offset is bounds checked above
+	dbPermissions, err := s.permissionRepo.List(ctx, int32(limit), int32(offset))
 	if err != nil {
 		return nil, 0, err
 	}

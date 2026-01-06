@@ -3,15 +3,13 @@ package apperrors
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
-// echo Default HTTP Error Handler
+// CustomHTTPErrorHandler is the default HTTP Error Handler
 func CustomHTTPErrorHandler(err error, c echo.Context) {
-	fmt.Println("=== start custom http error handler")
 	if c.Response().Committed {
 		return
 	}
@@ -22,10 +20,11 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 		return
 	}
 
-	he, ok := err.(*echo.HTTPError)
-	if ok {
+	var he *echo.HTTPError
+	if errors.As(err, &he) {
 		if he.Internal != nil {
-			if herr, ok := he.Internal.(*echo.HTTPError); ok {
+			var herr *echo.HTTPError
+			if errors.As(he.Internal, &herr) {
 				he = herr
 			}
 		}
@@ -62,12 +61,10 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 	if err != nil {
 		c.Logger().Error(err)
 	}
-	// fmt.Println("=== start custom http error handler")
+
 	// if c.Response().Committed {
 	// 	return
 	// }
-
-	// fmt.Println("after check commit")
 
 	// c.Logger().Error(err)
 
@@ -79,7 +76,6 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 	// 	return
 	// }
 
-	// fmt.Println("=== error internal")
 	// c.JSON(code, &AppError{
 	// 	Code:   code,
 	// 	Title:  http.StatusText(code),

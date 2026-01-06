@@ -73,7 +73,7 @@ func CreateTestUserWithVerification(t require.TestingT, username, email, passwor
 }
 
 // GenerateTestTokens generates access and refresh tokens for a test user
-func GenerateTestTokens(t require.TestingT, userID uuid.UUID, email string) (accessToken, refreshToken string) {
+func GenerateTestTokens(t require.TestingT, userID uuid.UUID, email string) (string, string) {
 	tokens, err := TestJWTMgr.GenerateTokenPair(userID, email)
 	require.NoError(t, err)
 
@@ -83,7 +83,7 @@ func GenerateTestTokens(t require.TestingT, userID uuid.UUID, email string) (acc
 	_, err = TestDB.ExecContext(ctx, `
 		INSERT INTO refresh_tokens (user_id, token_hash, expires_at)
 		VALUES ($1, $2, $3)
-	`, userID, tokenHash, tokens.ExpiresAt.Add(7*24*3600))
+	`, userID, tokenHash, tokens.ExpiresAt)
 	require.NoError(t, err)
 
 	return tokens.AccessToken, tokens.RefreshToken

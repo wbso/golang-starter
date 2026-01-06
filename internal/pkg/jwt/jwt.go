@@ -10,9 +10,10 @@ import (
 
 // Claims represents JWT claims
 type Claims struct {
+	jwt.RegisteredClaims
+
 	UserID uuid.UUID `json:"user_id"`
 	Email  string    `json:"email"`
-	jwt.RegisteredClaims
 }
 
 // TokenPair contains access and refresh tokens

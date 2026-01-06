@@ -29,17 +29,17 @@ func (v *Validator) Required(field, value string) *Validator {
 }
 
 // MinLength checks if a string field meets minimum length
-func (v *Validator) MinLength(field, value string, min int) *Validator {
-	if len(value) < min {
-		v.errors[field] = append(v.errors[field], fmt.Sprintf("%s must be at least %d characters", field, min))
+func (v *Validator) MinLength(field, value string, minLength int) *Validator {
+	if len(value) < minLength {
+		v.errors[field] = append(v.errors[field], fmt.Sprintf("%s must be at least %d characters", field, minLength))
 	}
 	return v
 }
 
 // MaxLength checks if a string field doesn't exceed maximum length
-func (v *Validator) MaxLength(field, value string, max int) *Validator {
-	if len(value) > max {
-		v.errors[field] = append(v.errors[field], fmt.Sprintf("%s must be at most %d characters", field, max))
+func (v *Validator) MaxLength(field, value string, maxLength int) *Validator {
+	if len(value) > maxLength {
+		v.errors[field] = append(v.errors[field], fmt.Sprintf("%s must be at most %d characters", field, maxLength))
 	}
 	return v
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -30,7 +29,6 @@ type testSetup struct {
 	jwtMgr   *jwt.Manager
 	emailSvc *email.Service
 	service  *Service
-	ctx      context.Context
 	cleanup  func()
 }
 
@@ -39,15 +37,15 @@ func setupTest(t *testing.T) *testSetup {
 	t.Helper()
 
 	// Set test environment variables
-	_ = os.Setenv("DB_HOST", "localhost")
-	_ = os.Setenv("DB_PORT", "10012")
-	_ = os.Setenv("DB_USER", "postgres")
-	_ = os.Setenv("DB_PASSWORD", "Secretcom123")
-	_ = os.Setenv("DB_NAME", "golang_starter")
-	_ = os.Setenv("JWT_SECRET", "test-secret-key-that-is-at-least-32-chars-long")
-	_ = os.Setenv("SMTP_HOST", "localhost")
-	_ = os.Setenv("SMTP_PORT", "1025")
-	_ = os.Setenv("APP_ENV", "test")
+	t.Setenv("DB_HOST", "localhost")
+	t.Setenv("DB_PORT", "10012")
+	t.Setenv("DB_USER", "postgres")
+	t.Setenv("DB_PASSWORD", "Secretcom123")
+	t.Setenv("DB_NAME", "golang_starter")
+	t.Setenv("JWT_SECRET", "test-secret-key-that-is-at-least-32-chars-long")
+	t.Setenv("SMTP_HOST", "localhost")
+	t.Setenv("SMTP_PORT", "1025")
+	t.Setenv("APP_ENV", "test")
 
 	// Load config
 	cfg, err := config.Load()
@@ -88,7 +86,6 @@ func setupTest(t *testing.T) *testSetup {
 		jwtMgr:   jwtMgr,
 		emailSvc: emailSvc,
 		service:  service,
-		ctx:      ctx,
 		cleanup:  cleanup,
 	}
 }
@@ -641,7 +638,7 @@ func TestService_Login(t *testing.T) {
 			}
 
 			// When
-			resp, err := ts.service.Login(ts.ctx, tt.request)
+			resp, err := ts.service.Login(context.TODO(), tt.request)
 
 			// Then
 			if tt.wantErr {
@@ -811,7 +808,7 @@ func TestService_Register(t *testing.T) {
 			}
 
 			// When
-			resp, err := ts.service.Register(ts.ctx, tt.request)
+			resp, err := ts.service.Register(context.TODO(), tt.request)
 
 			// Then
 			if tt.wantErr {
@@ -854,7 +851,7 @@ func TestService_RefreshToken(t *testing.T) {
 				tokens, err := ts.jwtMgr.GenerateTokenPair(user.ID, user.Email)
 				require.NoError(t, err)
 				tokenHash := repository.HashToken(tokens.RefreshToken)
-				err = ts.authRepo.CreateRefreshToken(ts.ctx, user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour))
+				err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour))
 				require.NoError(t, err)
 				return auth.RefreshTokenRequest{RefreshToken: tokens.RefreshToken}
 			},
@@ -896,10 +893,10 @@ func TestService_RefreshToken(t *testing.T) {
 				tokens, err := ts.jwtMgr.GenerateTokenPair(user.ID, user.Email)
 				require.NoError(t, err)
 				tokenHash := repository.HashToken(tokens.RefreshToken)
-				err = ts.authRepo.CreateRefreshToken(ts.ctx, user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour))
+				err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour))
 				require.NoError(t, err)
 				// Revoke the token
-				err = ts.authRepo.RevokeRefreshToken(ts.ctx, tokenHash)
+				err = ts.authRepo.RevokeRefreshToken(context.TODO(), tokenHash)
 				require.NoError(t, err)
 				return auth.RefreshTokenRequest{RefreshToken: tokens.RefreshToken}
 			},
@@ -914,7 +911,7 @@ func TestService_RefreshToken(t *testing.T) {
 				tokens, err := ts.jwtMgr.GenerateTokenPair(user.ID, user.Email)
 				require.NoError(t, err)
 				tokenHash := repository.HashToken(tokens.RefreshToken)
-				err = ts.authRepo.CreateRefreshToken(ts.ctx, user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour))
+				err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour))
 				require.NoError(t, err)
 				// Soft delete the user
 				_, err = ts.db.Exec("UPDATE users SET deleted_at = NOW() WHERE id = $1", user.ID)
@@ -931,7 +928,7 @@ func TestService_RefreshToken(t *testing.T) {
 				tokens, err := ts.jwtMgr.GenerateTokenPair(user.ID, user.Email)
 				require.NoError(t, err)
 				tokenHash := repository.HashToken(tokens.RefreshToken)
-				err = ts.authRepo.CreateRefreshToken(ts.ctx, user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour))
+				err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour))
 				require.NoError(t, err)
 				return auth.RefreshTokenRequest{RefreshToken: tokens.RefreshToken}
 			},
@@ -954,7 +951,7 @@ func TestService_RefreshToken(t *testing.T) {
 			oldTokenHash := repository.HashToken(req.RefreshToken)
 
 			// When
-			resp, err := ts.service.RefreshToken(ts.ctx, req)
+			resp, err := ts.service.RefreshToken(context.TODO(), req)
 
 			// Then
 			if tt.wantErr {
@@ -993,7 +990,7 @@ func TestService_Logout(t *testing.T) {
 				tokens, err := ts.jwtMgr.GenerateTokenPair(user.ID, user.Email)
 				require.NoError(t, err)
 				tokenHash := repository.HashToken(tokens.RefreshToken)
-				err = ts.authRepo.CreateRefreshToken(ts.ctx, user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour))
+				err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokenHash, tokens.ExpiresAt.Add(7*24*time.Hour))
 				require.NoError(t, err)
 				return user.ID, tokens.AccessToken
 			},
@@ -1003,14 +1000,15 @@ func TestService_Logout(t *testing.T) {
 				// Token should be blacklisted
 				assert.True(t, isTokenBlacklisted(t, db, tokenID))
 				// All refresh tokens should be revoked
-				tokens, _ := db.QueryContext(context.Background(),
+				rows, _ := db.QueryContext(context.Background(),
 					"SELECT revoked_at FROM refresh_tokens WHERE user_id = $1", userID)
-				defer func() { _ = tokens.Close() }()
-				for tokens.Next() {
+				defer func() { _ = rows.Close() }()
+				for rows.Next() {
 					var revokedAt sql.NullTime
-					_ = tokens.Scan(&revokedAt)
+					_ = rows.Scan(&revokedAt)
 					assert.True(t, revokedAt.Valid)
 				}
+				require.NoError(t, rows.Err())
 			},
 		},
 		{
@@ -1023,7 +1021,7 @@ func TestService_Logout(t *testing.T) {
 				// Create multiple refresh tokens
 				for i := 0; i < 3; i++ {
 					tokenHash := repository.HashToken(tokens.RefreshToken + fmt.Sprint(i))
-					err = ts.authRepo.CreateRefreshToken(ts.ctx, user.ID, tokenHash, time.Now().Add(7*24*time.Hour))
+					err = ts.authRepo.CreateRefreshToken(context.TODO(), user.ID, tokenHash, time.Now().Add(7*24*time.Hour))
 					require.NoError(t, err)
 				}
 				return user.ID, tokens.AccessToken
@@ -1049,7 +1047,7 @@ func TestService_Logout(t *testing.T) {
 			userID, accessToken := tt.setup(t, ts)
 
 			// When
-			err := ts.service.Logout(ts.ctx, userID, accessToken)
+			err := ts.service.Logout(context.TODO(), userID, accessToken)
 
 			// Then
 			if tt.wantErr {
@@ -1082,7 +1080,7 @@ func TestService_VerifyEmail(t *testing.T) {
 				user := createTestUser(t, ts.db, withEmailVerified(false))
 				token, _ := repository.GenerateVerificationToken()
 				expiresAt := time.Now().Add(24 * time.Hour)
-				err := ts.authRepo.CreateEmailVerificationToken(ts.ctx, user.ID, token, expiresAt)
+				err := ts.authRepo.CreateEmailVerificationToken(context.TODO(), user.ID, token, expiresAt)
 				require.NoError(t, err)
 				return token
 			},
@@ -1107,10 +1105,10 @@ func TestService_VerifyEmail(t *testing.T) {
 				user := createTestUser(t, ts.db, withEmailVerified(false))
 				token, _ := repository.GenerateVerificationToken()
 				expiresAt := time.Now().Add(24 * time.Hour)
-				err := ts.authRepo.CreateEmailVerificationToken(ts.ctx, user.ID, token, expiresAt)
+				err := ts.authRepo.CreateEmailVerificationToken(context.TODO(), user.ID, token, expiresAt)
 				require.NoError(t, err)
 				// Mark as used
-				err = ts.authRepo.MarkEmailVerificationTokenUsed(ts.ctx, token)
+				err = ts.authRepo.MarkEmailVerificationTokenUsed(context.TODO(), token)
 				require.NoError(t, err)
 				return token
 			},
@@ -1123,7 +1121,7 @@ func TestService_VerifyEmail(t *testing.T) {
 				user := createTestUser(t, ts.db, withEmailVerified(false))
 				token, _ := repository.GenerateVerificationToken()
 				expiresAt := time.Now().Add(-1 * time.Hour) // Expired
-				err := ts.authRepo.CreateEmailVerificationToken(ts.ctx, user.ID, token, expiresAt)
+				err := ts.authRepo.CreateEmailVerificationToken(context.TODO(), user.ID, token, expiresAt)
 				require.NoError(t, err)
 				return token
 			},
@@ -1136,7 +1134,7 @@ func TestService_VerifyEmail(t *testing.T) {
 				user := createTestUser(t, ts.db, withEmailVerified(true))
 				token, _ := repository.GenerateVerificationToken()
 				expiresAt := time.Now().Add(24 * time.Hour)
-				err := ts.authRepo.CreateEmailVerificationToken(ts.ctx, user.ID, token, expiresAt)
+				err := ts.authRepo.CreateEmailVerificationToken(context.TODO(), user.ID, token, expiresAt)
 				require.NoError(t, err)
 				return token
 			},
@@ -1157,7 +1155,7 @@ func TestService_VerifyEmail(t *testing.T) {
 			token := tt.setup(t, ts)
 
 			// When
-			err := ts.service.VerifyEmail(ts.ctx, token)
+			err := ts.service.VerifyEmail(context.TODO(), token)
 
 			// Then
 			if tt.wantErr {
@@ -1234,7 +1232,7 @@ func TestService_ForgotPassword(t *testing.T) {
 			setup: func(t *testing.T, ts *testSetup) auth.ForgotPasswordRequest {
 				_ = createTestUser(t, ts.db, withEmail("multi@example.com"))
 				// First request
-				_ = ts.service.ForgotPassword(ts.ctx, auth.ForgotPasswordRequest{Email: "multi@example.com"})
+				_ = ts.service.ForgotPassword(context.TODO(), auth.ForgotPasswordRequest{Email: "multi@example.com"})
 				// Return second request
 				return auth.ForgotPasswordRequest{Email: "multi@example.com"}
 			},
@@ -1258,7 +1256,7 @@ func TestService_ForgotPassword(t *testing.T) {
 			req := tt.setup(t, ts)
 
 			// When
-			err := ts.service.ForgotPassword(ts.ctx, req)
+			err := ts.service.ForgotPassword(context.TODO(), req)
 
 			// Then
 			if tt.wantErr {
@@ -1291,7 +1289,7 @@ func TestService_ResetPassword(t *testing.T) {
 				user := createTestUser(t, ts.db)
 				token, _ := repository.GenerateResetToken()
 				expiresAt := time.Now().Add(1 * time.Hour)
-				err := ts.authRepo.CreatePasswordResetToken(ts.ctx, user.ID, token, expiresAt)
+				err := ts.authRepo.CreatePasswordResetToken(context.TODO(), user.ID, token, expiresAt)
 				require.NoError(t, err)
 				oldHash := getUserPasswordHash(t, ts.db, user.ID.String())
 				_ = oldHash // Store for comparison
@@ -1325,7 +1323,7 @@ func TestService_ResetPassword(t *testing.T) {
 				user := createTestUser(t, ts.db)
 				token, _ := repository.GenerateResetToken()
 				expiresAt := time.Now().Add(-1 * time.Hour) // Expired
-				err := ts.authRepo.CreatePasswordResetToken(ts.ctx, user.ID, token, expiresAt)
+				err := ts.authRepo.CreatePasswordResetToken(context.TODO(), user.ID, token, expiresAt)
 				require.NoError(t, err)
 				return auth.ResetPasswordRequest{
 					Token:       token,
@@ -1341,10 +1339,10 @@ func TestService_ResetPassword(t *testing.T) {
 				user := createTestUser(t, ts.db)
 				token, _ := repository.GenerateResetToken()
 				expiresAt := time.Now().Add(1 * time.Hour)
-				err := ts.authRepo.CreatePasswordResetToken(ts.ctx, user.ID, token, expiresAt)
+				err := ts.authRepo.CreatePasswordResetToken(context.TODO(), user.ID, token, expiresAt)
 				require.NoError(t, err)
 				// Mark as used
-				err = ts.authRepo.MarkPasswordResetTokenUsed(ts.ctx, token)
+				err = ts.authRepo.MarkPasswordResetTokenUsed(context.TODO(), token)
 				require.NoError(t, err)
 				return auth.ResetPasswordRequest{
 					Token:       token,
@@ -1360,7 +1358,7 @@ func TestService_ResetPassword(t *testing.T) {
 				user := createTestUser(t, ts.db)
 				token, _ := repository.GenerateResetToken()
 				expiresAt := time.Now().Add(1 * time.Hour)
-				err := ts.authRepo.CreatePasswordResetToken(ts.ctx, user.ID, token, expiresAt)
+				err := ts.authRepo.CreatePasswordResetToken(context.TODO(), user.ID, token, expiresAt)
 				require.NoError(t, err)
 				return auth.ResetPasswordRequest{
 					Token:       token,
@@ -1390,7 +1388,7 @@ func TestService_ResetPassword(t *testing.T) {
 			req := tt.setup(t, ts)
 
 			// When
-			err := ts.service.ResetPassword(ts.ctx, req)
+			err := ts.service.ResetPassword(context.TODO(), req)
 
 			// Then
 			if tt.wantErr {

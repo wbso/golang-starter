@@ -130,7 +130,7 @@ func (s *Service) Register(ctx context.Context, req auth.RegisterRequest) (*auth
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, fmt.Errorf("failed to hash password: %v", err)
+		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
 
 	// Create user
@@ -145,19 +145,19 @@ func (s *Service) Register(ctx context.Context, req auth.RegisterRequest) (*auth
 			return nil, apperrors.NewErrConflict().WithError(err)
 		}
 
-		return nil, fmt.Errorf("failed to create user: %v", err)
+		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 
 	// Generate email verification token
 	token, err := repository.GenerateVerificationToken()
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate verification token: %v", err)
+		return nil, fmt.Errorf("failed to generate verification token: %w", err)
 	}
 
 	// Store verification token
 	expiresAt := time.Now().Add(24 * time.Hour)
 	if err := s.authRepo.CreateEmailVerificationToken(ctx, user.ID, token, expiresAt); err != nil {
-		return nil, fmt.Errorf("failed to store verification token: %v", err)
+		return nil, fmt.Errorf("failed to store verification token: %w", err)
 	}
 
 	// Send verification email
@@ -291,7 +291,8 @@ func (s *Service) ForgotPassword(ctx context.Context, req auth.ForgotPasswordReq
 	// Get user
 	user, err := s.userRepo.GetByEmail(ctx, req.Email)
 	if err != nil {
-		// Don't reveal if user exists
+		// Don't reveal if user exists - return successfully to prevent enumeration
+		//nolint:nilerr // intentional - we don't want to reveal if user exists
 		return nil
 	}
 

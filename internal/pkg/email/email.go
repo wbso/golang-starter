@@ -73,6 +73,7 @@ func (s *Service) sendWithTLS(addr string, msg string, to string) error {
 
 	// Start TLS
 	if err := client.StartTLS(&tls.Config{
+		MinVersion:         tls.VersionTLS12,
 		InsecureSkipVerify: false,
 		ServerName:         s.config.Host,
 	}); err != nil {

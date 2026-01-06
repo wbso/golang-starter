@@ -42,8 +42,8 @@ func (db *DB) Close() error {
 }
 
 // Ping checks if the database connection is alive
-func (db *DB) Ping() error {
-	return db.DB.Ping()
+func (db *DB) Ping(ctx context.Context) error {
+	return db.PingContext(ctx)
 }
 
 // HealthCheck performs a health check on the database
@@ -77,7 +77,7 @@ func (db *DB) InTransaction(ctx context.Context, fn func(*sqlx.Tx) error) error 
 
 	if err := fn(tx); err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return fmt.Errorf("tx error: %v, rollback error: %w", err, rbErr)
+			return fmt.Errorf("tx error: %w, rollback error: %w", err, rbErr)
 		}
 		return err
 	}
